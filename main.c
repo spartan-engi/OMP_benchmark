@@ -57,7 +57,7 @@ float vec3dot(vec3 v1, vec3 v2)
 
 vec3 vec3normalize(vec3 v)
 {
-	float ilength = 1.0 / vec3dot(v, v);
+	float ilength = 1.0 / sqrtf(vec3dot(v, v));
 	return vec3scale(ilength, v);
 }
 
