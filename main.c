@@ -5,17 +5,74 @@
 
 typedef struct{float x, y, z;} vec3;
 
+vec3 vec3m(float x, float y, float z)
+{
+	vec3 res;
+	res.x = x;
+	res.y = y;
+	res.z = z;
+	return res;
+}
+vec3 vec3add(vec3 v1, vec3 v2)
+{
+	vec3 res;
+	res.x = v1.x + v2.x;
+	res.y = v1.y + v2.y;
+	res.z = v1.z + v2.z;
+	return res;
+}
+vec3 vec3sub(vec3 v1, vec3 v2)
+{
+	vec3 res;
+	res.x = v1.x - v2.x;
+	res.y = v1.y - v2.y;
+	res.z = v1.z - v2.z;
+	return res;
+}
+vec3 vec3scale(float scalar, vec3 v)
+{
+	vec3 res;
+	res.x = scalar * v.x;
+	res.y = scalar * v.y;
+	res.z = scalar * v.z;
+	return res;
+}
+vec3 vec3mult(vec3 v1, vec3 v2)
+{
+	vec3 res;
+	res.x = v1.x * v2.x;
+	res.y = v1.y * v2.y;
+	res.z = v1.z * v2.z;
+	return res;
+}
+float vec3dot(vec3 v1, vec3 v2)
+{
+	float res = 0;
+	res += v1.x * v2.x;
+	res += v1.y * v2.y;
+	res += v1.z * v2.z;
+	return res;
+}
+
+
+vec3 vec3normalize(vec3 v)
+{
+	float ilength = 1.0 / vec3dot(v, v);
+	return vec3scale(ilength, v);
+}
+
+
+
+float SDF_Sphere(vec3 position, vec3 center, float radius)
+{
+	vec3 dif = vec3sub(position, center);
+	float d = sqrtf(vec3dot(dif, dif));
+	d = d - radius;
+	return d;
+}
 float SDF(vec3 position)
 {
-	float res, temp;
-	res = 0;
-	temp = position.x - 0.0;
-	res += temp*temp;
-	temp = position.y - 0.0;
-	res += temp*temp;
-	temp = position.z - 5.0;
-	res += temp*temp;
-	res = sqrtf(res) - 1;
+	float res = SDF_Sphere(position, vec3m(0, 0, 5), 1);
 	return res;
 }
 
@@ -24,26 +81,21 @@ float SDF(vec3 position)
 
 char march(vec3 ray)
 {
-	vec3 position;
-	position.x = 0.0;
-	position.y = 0.0;
-	position.z = 0.0;
+	vec3 position = vec3m(0.0, 0.0, 0.0);
 	for(int step = 0; step < NUM_STEP; step++)
 	{
 		float distance = SDF(position);
 
 		if(distance < MIN_STEP) return 1;
 
-		position.x += ray.x * distance;
-		position.y += ray.y * distance;
-		position.z += ray.z * distance;
+		position = vec3add(position, vec3scale(distance, ray));
 	}
 	return 0;
 }
 
 #define SCREENX 158 
 #define SCREENY 36
-#define ASPECT_RATIO ((float)SCREENX/(float)SCREENY)/2.2
+#define ASPECT_RATIO ((float)SCREENX/(float)SCREENY)/2
 
 char screen[SCREENY][SCREENX];
 int main(int argc, char* argv[])
@@ -63,11 +115,7 @@ int main(int argc, char* argv[])
 			ray.x = ((((float)i)/SCREENX)-0.5)*ASPECT_RATIO;
 			ray.y = (0.5-(((float)j)/SCREENY));
 			ray.z = 1.0;
-			float inv = (ray.x*ray.x)+(ray.y*ray.y)+(ray.z*ray.z);
-			inv = 1.0 / sqrtf(inv);
-			ray.x *= inv;
-			ray.y *= inv;
-			ray.z *= inv;
+			ray = vec3normalize(ray);
 
 			screen[j][i] = march(ray);
 		}
