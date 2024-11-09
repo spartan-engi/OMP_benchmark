@@ -3,16 +3,17 @@
 #include <omp.h>
 #include <sys/time.h>
 
+typedef struct{float x, y, z;} vec3;
 
-float SDF(float position[3])
+float SDF(vec3 position)
 {
 	float res, temp;
 	res = 0;
-	temp = position[0] - 0.0;
+	temp = position.x - 0.0;
 	res += temp*temp;
-	temp = position[1] - 0.0;
+	temp = position.y - 0.0;
 	res += temp*temp;
-	temp = position[2] - 5.0;
+	temp = position.z - 5.0;
 	res += temp*temp;
 	res = sqrtf(res) - 1;
 	return res;
@@ -21,21 +22,21 @@ float SDF(float position[3])
 #define NUM_STEP 128
 #define MIN_STEP 0.001
 
-char march(float ray[3])
+char march(vec3 ray)
 {
-	float position[3];
-	position[0] = 0.0;
-	position[1] = 0.0;
-	position[2] = 0.0;
+	vec3 position;
+	position.x = 0.0;
+	position.y = 0.0;
+	position.z = 0.0;
 	for(int step = 0; step < NUM_STEP; step++)
 	{
 		float distance = SDF(position);
 
 		if(distance < MIN_STEP) return 1;
 
-		position[0] += ray[0] * distance;
-		position[1] += ray[1] * distance;
-		position[2] += ray[2] * distance;
+		position.x += ray.x * distance;
+		position.y += ray.y * distance;
+		position.z += ray.z * distance;
 	}
 	return 0;
 }
@@ -58,15 +59,15 @@ int main(int argc, char* argv[])
 			// {
 			//     printf("\nhere\n");
 			// }
-			float ray[3];
-			ray[0] = ((((float)i)/SCREENX)-0.5)*ASPECT_RATIO;
-			ray[1] = (0.5-(((float)j)/SCREENY));
-			ray[2] = 1.0;
-			float inv = (ray[0]*ray[0])+(ray[1]*ray[1])+(ray[2]*ray[2]);
+			vec3 ray;
+			ray.x = ((((float)i)/SCREENX)-0.5)*ASPECT_RATIO;
+			ray.y = (0.5-(((float)j)/SCREENY));
+			ray.z = 1.0;
+			float inv = (ray.x*ray.x)+(ray.y*ray.y)+(ray.z*ray.z);
 			inv = 1.0 / sqrtf(inv);
-			ray[0] *= inv;
-			ray[1] *= inv;
-			ray[2] *= inv;
+			ray.x *= inv;
+			ray.y *= inv;
+			ray.z *= inv;
 
 			screen[j][i] = march(ray);
 		}
