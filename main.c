@@ -78,19 +78,37 @@ float SDF(vec3 position)
 
 #define NUM_STEP 128
 #define MIN_STEP 0.001
+#define EPSILON  0.0001
 
 char march(vec3 ray)
 {
 	vec3 position = vec3m(0.0, 0.0, 0.0);
+	char colision = 0;
 	for(int step = 0; step < NUM_STEP; step++)
 	{
 		float distance = SDF(position);
 
-		if(distance < MIN_STEP) return 9;
+		if(distance < MIN_STEP)
+		{
+			colision = 1;
+			break;
+		}
 
 		position = vec3add(position, vec3scale(distance, ray));
 	}
-	return 0;
+
+	if(!colision)	return 0;
+
+	vec3 normal;
+	normal.x = SDF(vec3add(position, vec3m(EPSILON,0,0))) - SDF(vec3sub(position, vec3m(EPSILON,0,0)));
+	normal.y = SDF(vec3add(position, vec3m(0,EPSILON,0))) - SDF(vec3sub(position, vec3m(0,EPSILON,0)));
+	normal.z = SDF(vec3add(position, vec3m(0,0,EPSILON))) - SDF(vec3sub(position, vec3m(0,0,EPSILON)));
+	normal = vec3normalize(normal);
+
+	float temp = vec3dot(normal, vec3m(0,1,0));
+	temp = 8.0*(0.5*(temp + 1.0)) + 1.0;
+	char res = (char)temp;
+	return res;
 }
 
 #define SCREENX 158 
