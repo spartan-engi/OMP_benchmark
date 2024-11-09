@@ -86,7 +86,7 @@ char march(vec3 ray)
 	{
 		float distance = SDF(position);
 
-		if(distance < MIN_STEP) return 1;
+		if(distance < MIN_STEP) return 9;
 
 		position = vec3add(position, vec3scale(distance, ray));
 	}
@@ -97,6 +97,7 @@ char march(vec3 ray)
 #define SCREENY 36
 #define ASPECT_RATIO ((float)SCREENX/(float)SCREENY)/2
 
+const char ASCII_PALLET[10] = " .:-=+*#%@";
 char screen[SCREENY][SCREENX];
 int main(int argc, char* argv[])
 {
@@ -131,7 +132,7 @@ int main(int argc, char* argv[])
 	{
 		for(int i = 0; i < SCREENX; i++)
 		{
-			printf("%d", screen[j][i]);
+			printf("%c", ASCII_PALLET[screen[j][i]]);
 		}
 		printf("\n");
 	}
