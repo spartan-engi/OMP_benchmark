@@ -78,11 +78,12 @@ float SDF(vec3 position)
 
 #define NUM_STEP 128
 #define MIN_STEP 0.001
+#define MIN_S_STEP 0.0001
 #define EPSILON  0.0001
 
-char march(vec3 ray)
+char march(vec3 start, vec3 ray, vec3 light_origin)
 {
-	vec3 position = vec3m(0.0, 0.0, 0.0);
+	vec3 position = start;
 	char colision = 0;
 	for(int step = 0; step < NUM_STEP; step++)
 	{
@@ -99,14 +100,45 @@ char march(vec3 ray)
 
 	if(!colision)	return 0;
 
+	//shadow ray
+	vec3 shadow_position = position;
+	vec3 to_light = vec3sub(light_origin, shadow_position);
+	vec3 light_normal = vec3normalize(to_light);
+	shadow_position = vec3add(shadow_position, vec3scale(MIN_STEP, light_normal));
+	colision = 0;
+	for(int step = 0; step < NUM_STEP; step++)
+	{
+		float distance = SDF(shadow_position);
+		
+		to_light = vec3sub(light_origin, shadow_position);
+		float light_distance = sqrtf(vec3dot(to_light, to_light));
+		if(light_distance < distance)
+		{
+			colision = 1;
+			break;
+		}
+
+		if((distance < MIN_S_STEP))
+		{
+			break;
+		}
+
+		shadow_position = vec3add(shadow_position, vec3scale(distance, light_normal));
+	}
+
+	// in shadow
+	if(!colision)	return 0;
+
+
 	vec3 normal;
 	normal.x = SDF(vec3add(position, vec3m(EPSILON,0,0))) - SDF(vec3sub(position, vec3m(EPSILON,0,0)));
 	normal.y = SDF(vec3add(position, vec3m(0,EPSILON,0))) - SDF(vec3sub(position, vec3m(0,EPSILON,0)));
 	normal.z = SDF(vec3add(position, vec3m(0,0,EPSILON))) - SDF(vec3sub(position, vec3m(0,0,EPSILON)));
 	normal = vec3normalize(normal);
 
-	float temp = vec3dot(normal, vec3m(0,1,0));
-	temp = 8.0*(0.5*(temp + 1.0)) + 1.0;
+	float temp = vec3dot(normal, light_normal);
+	if(temp < 0.0) temp = 0.0;
+	temp = 8.0*temp + 1.0;
 	char res = (char)temp;
 	return res;
 }
@@ -126,17 +158,15 @@ int main(int argc, char* argv[])
 	{
 		for(int i = 0; i < SCREENX; i++)
 		{
-			// if((i == 79)&&(j == 18))
-			// {
-			//     printf("\nhere\n");
-			// }
+			vec3 camera = vec3m(0,  0, 0);
+			vec3 light  = vec3m(8, 16, -8);
 			vec3 ray;
 			ray.x = ((((float)i)/SCREENX)-0.5)*ASPECT_RATIO;
 			ray.y = (0.5-(((float)j)/SCREENY));
 			ray.z = 1.0;
 			ray = vec3normalize(ray);
 
-			screen[j][i] = march(ray);
+			screen[j][i] = march(camera, ray, light);
 		}
 	}
 	gettimeofday(&end, NULL);
