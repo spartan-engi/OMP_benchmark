@@ -70,9 +70,51 @@ float SDF_Sphere(vec3 position, vec3 center, float radius)
 	d = d - radius;
 	return d;
 }
+float SDF_Cube(vec3 position, vec3 center, vec3 size)
+{
+	vec3 dif = vec3sub(position, center);
+	if(dif.x < 0) dif.x = -dif.x;
+	if(dif.y < 0) dif.y = -dif.y;
+	if(dif.z < 0) dif.z = -dif.z;
+	dif = vec3sub(dif, size);
+
+	float max_d;
+	if(dif.x > dif.y)
+	{
+		if(dif.x > dif.z)
+		{
+			max_d = dif.x;
+		}
+		else
+		{
+			max_d = dif.z;
+		}
+	}
+	else
+	{
+		if(dif.y > dif.z)
+		{
+			max_d = dif.y;
+		}
+		else
+		{
+			max_d = dif.z;
+		}
+	}
+
+	return max_d;
+}
+float min(float a, float b)
+{
+	if(a < b) return a;
+	else      return b;
+}
 float SDF(vec3 position)
 {
-	float res = SDF_Sphere(position, vec3m(0, 0, 5), 1);
+	float res;
+	res =          SDF_Sphere(position, vec3m( 2, 0,  5), 1);
+	res = min(res, SDF_Sphere(position, vec3m(-2, 0,  5), 1));
+	res = min(res, SDF_Cube  (position, vec3m( 0,-3, 20), vec3m(20, 0.1, 13)));
 	return res;
 }
 
@@ -159,7 +201,7 @@ int main(int argc, char* argv[])
 		for(int i = 0; i < SCREENX; i++)
 		{
 			vec3 camera = vec3m(0,  0, 0);
-			vec3 light  = vec3m(8, 16, -8);
+			vec3 light  = vec3m(0, 3, 3);
 			vec3 ray;
 			ray.x = ((((float)i)/SCREENX)-0.5)*ASPECT_RATIO;
 			ray.y = (0.5-(((float)j)/SCREENY));
