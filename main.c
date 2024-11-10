@@ -193,9 +193,10 @@ const char ASCII_PALLET[10] = " .:-=+*#%@";
 char screen[SCREENY][SCREENX];
 int main(int argc, char* argv[])
 {
-	struct timeval start, end;
-	gettimeofday(&start, NULL);
-	#pragma omp parallel for num_threads(1)
+	struct timeval s1, e1;
+	struct timeval s2, e2;
+	gettimeofday(&s1, NULL);
+	// #pragma omp parallel for num_threads(16)
 	for(int j = 0; j < SCREENY; j++)
 	{
 		for(int i = 0; i < SCREENX; i++)
@@ -211,12 +212,10 @@ int main(int argc, char* argv[])
 			screen[j][i] = march(camera, ray, light);
 		}
 	}
-	gettimeofday(&end, NULL);
+	gettimeofday(&e1, NULL);
 
-	printf("%ld\n", end.tv_usec-start.tv_usec);
 
-	gettimeofday(&start, NULL);
-	if(argc > 1) return 0;
+	gettimeofday(&s2, NULL);
 
 	for(int j = 0; j < SCREENY; j++)
 	{
@@ -226,8 +225,9 @@ int main(int argc, char* argv[])
 		}
 		printf("\n");
 	}
-	gettimeofday(&end, NULL);
-	printf("%ld\n", end.tv_usec-start.tv_usec);
+	gettimeofday(&e2, NULL);
+	printf("%ld\n", e1.tv_usec-s1.tv_usec);
+	printf("%ld\n", e2.tv_usec-s2.tv_usec);
 
 	return 0;
 }

@@ -3,6 +3,3 @@ build:
 
 run:
 	./main.exe
-
-bench:
-	./main.exe 1
